@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class LogCaptureAppender extends AbstractAppender implements AutoCloseable {
     private final List<LogEvent> events = new LinkedList<>();
@@ -113,12 +112,15 @@ public class LogCaptureAppender extends AbstractAppender implements AutoCloseabl
     }
 
     public List<String> getMessages(Level level) {
+        final List<String> result = new LinkedList<>();
         synchronized (events) {
-            return events.stream()
-                .filter(e -> level.equals(e.getLevel()))
-                .map(e -> e.getMessage().getFormattedMessage())
-                .collect(Collectors.toList());
+            for (final LogEvent event : events) {
+                if (level.equals(event.getLevel())) {
+                    result.add(event.getMessage().getFormattedMessage());
+                }
+            }
         }
+        return result;
     }
 
     public List<String> getMessages() {
